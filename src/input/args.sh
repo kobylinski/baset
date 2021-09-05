@@ -149,12 +149,15 @@ baset_help() {
   local var i=0 is
   local options=("${BASET_OPTIONS[@]}")
   local options_d=("${BASET_OPTIONS_D[@]}")
+  local options_v=("${BASET_OPTIONS_V[@]}")
   local args=("${BASET_ARGS[@]}")
   local args_d=("${BASET_ARGS_D[@]}")
   local arg_s="$BASET_ARG_S"
   local arg_s_d="$BASET_ARG_S_D"
   local vlen vlenOpts
   local hLen=$(strlen "${BASET_INFO[@]}")
+  local variables=("${BASET_OPTIONS_V[@]}" "${BASET_ARG_S[@]}")
+  local variablesLen
 
   # Print tool header
   if [ ${#BASET_INFO[@]} -ne 0 ]; then
@@ -184,8 +187,10 @@ baset_help() {
   if [ ! -z "${BASET_COMMANDS_CURRENT}" ]; then
     eval "options=(\"\${options[@]}\" \"\${${BASET_COMMANDS_CURRENT}_BASET_OPTIONS[@]}\")"  
     eval "options_d=(\"\${options_d[@]}\" \"\${${BASET_COMMANDS_CURRENT}_BASET_OPTIONS_D[@]}\")"  
+    eval "options_v=(\"\${options_v[@]}\" \"\${${BASET_COMMANDS_CURRENT}_BASET_OPTIONS_V[@]}\")"  
     eval "args=(\"\${args[@]}\" \"\${${BASET_COMMANDS_CURRENT}_BASET_ARGS[@]}\")"
     eval "args_d=(\"\${args_d[@]}\" \"\${${BASET_COMMANDS_CURRENT}_BASET_ARGS_D[@]}\")"
+    eval "variables+=(\"\${${BASET_COMMANDS_CURRENT}_BASET_OPTIONS_V[@]}\" \"\${args[@]}\")"
 
     # List of attributes and option names to setup optimal length of attrib. name column width
     vLenOpts=("${options[@]}" "${args[@]}")
@@ -198,6 +203,7 @@ baset_help() {
       arg_s="$is"
       eval "arg_s_d=\${${BASET_COMMANDS_CURRENT}_BASET_ARG_S_D}"
       vLenOpts+=("$arg_s\[\]")
+      variables+=("$arg_s")
     fi
 
     # Maximum lenght of attribute names to nice printing
@@ -215,6 +221,9 @@ baset_help() {
     fi
   fi
 
+  # Calculate variables column width
+  variablesLen=$(strlen "${variables[@]}");
+
   # Display rest of args
   for var in "${args[@]}"; do
     printf " {%s}" "$var"
@@ -229,7 +238,11 @@ baset_help() {
   i=0
   printf "\n\n\n\033[${FP}mOptions:\033[${FN}m\n"
   for var in "${options[@]}"; do
-    printf "  \033[${FA}m%-${vLen}s\033[${FN}m  %s\n" "$var" "${options_d[$i]}"
+    if [ "$verbose" == "yes" ]; then
+      printf "  \033[${FA}m%-${vLen}s\033[${FN}m  \033[${FAF}m\$%-${variablesLen}s\033[${FN}m %s\n" "$var" "${options_v[$i]}" "${options_d[$i]}"
+    else
+      printf "  \033[${FA}m%-${vLen}s\033[${FN}m  %s\n" "$var" "${options_d[$i]}"
+    fi
     i=$(($i+1))
   done
 
@@ -237,13 +250,21 @@ baset_help() {
   i=0
   printf "\n\033[${FP}mArguments:\033[${FN}m\n"
   for var in "${args[@]}"; do
-    printf "  \033[${FA}m%-${vLen}s\033[${FN}m  %s\n" "$var" "${args_d[$i]}"
+    if [ "$verbose" == "yes" ]; then
+      printf "  \033[${FA}m%-${vLen}s\033[${FN}m  \033[${FAF}m\$%-${variablesLen}s\033[${FN}m  %s\n" "$var" "$var" "${args_d[$i]}"
+    else
+      printf "  \033[${FA}m%-${vLen}s\033[${FN}m  %s\n" "$var" "${args_d[$i]}"
+    fi
     i=$(($i+1))
   done
 
   # Add Spread argument
   if [ ! -z "${arg_s}" ]; then
-    printf "  \033[${FA}m%-${vLen}s\033[${FN}m  %s\n" "$arg_s[]" "$arg_s_d"
+    if [ "$verbose" == "yes" ]; then
+      printf "  \033[${FA}m%-${vLen}s\033[${FN}m  \033[${FAF}m\$%-${variablesLen}s\033[${FN}m  %s\n" "$arg_s[]" "$arg_s" "$arg_s_d"
+    else
+      printf "  \033[${FA}m%-${vLen}s\033[${FN}m  %s\n" "$arg_s[]" "$arg_s_d"
+    fi
   fi
 
   # Display available commands only if none is active
