@@ -83,18 +83,19 @@ BASET_COMMANDS_CURRENT=""
 # - $1 option name
 # - $2 option description
 +opt() {
-  local name hasValue isMulti
+  local name hasValue isMulti lastChar
   if [ "${1:0:2}" == '--' ]; then
-    if [ "${1:-1}" == "*" ]; then
+    lastChar=${1:${#1}-1}
+    if [ "$lastChar" == "*" ]; then
       isMulti="yes"
-      name="${1:2:-1}"
+      name=${1:2:${#1}-3}
     else
       isMulti="no"
       name="${1:2}"
     fi
-    if [ "${1:-1}" == "=" ]; then
+    if [ "$lastChar" == "=" ]; then
       hasValue="yes"
-      name="${1:2:-1}"
+      name=${1:2:${#1}-3}
     else
       hasValue="no"
       name="${1:2}"
@@ -151,7 +152,8 @@ baset_help() {
   local args=("${BASET_ARGS[@]}")
   local args_d=("${BASET_ARGS_D[@]}")
   local arg_s="$BASET_ARG_S"
-  local vlen
+  local arg_s_d="$BASET_ARG_S_D"
+  local vlen vlenOpts
   local hLen=$(strlen "${BASET_INFO[@]}")
 
   # Print tool header
@@ -185,8 +187,8 @@ baset_help() {
     eval "args=(\"\${args[@]}\" \"\${${BASET_COMMANDS_CURRENT}_BASET_ARGS[@]}\")"
     eval "args_d=(\"\${args_d[@]}\" \"\${${BASET_COMMANDS_CURRENT}_BASET_ARGS_D[@]}\")"
 
-    # Maximum lenght of attribute names to nice printing
-    vLen=$(strlen "${options[@]} ${args[@]}")
+    # List of attributes and option names to setup optimal length of attrib. name column width
+    vLenOpts=("${options[@]}" "${args[@]}")
 
     # Check if command specific spread attribute is defined
     is=$(eval "echo \${${BASET_COMMANDS_CURRENT}_BASET_ARG_S}")
@@ -194,8 +196,12 @@ baset_help() {
     # Override default spread attribute
     if [ ! -z "${is}" ]; then
       arg_s="$is"
+      eval "arg_s_d=\${${BASET_COMMANDS_CURRENT}_BASET_ARG_S_D}"
+      vLenOpts+=("$arg_s\[\]")
     fi
 
+    # Maximum lenght of attribute names to nice printing
+    vLen=$(strlen "${vLenOpts[@]}")
     printf " \033[${FAF}m%s\033[${FN}m" "$BASET_COMMANDS_CURRENT"
 
     # Display usage of command
@@ -235,6 +241,11 @@ baset_help() {
     i=$(($i+1))
   done
 
+  # Add Spread argument
+  if [ ! -z "${arg_s}" ]; then
+    printf "  \033[${FA}m%-${vLen}s\033[${FN}m  %s\n" "$arg_s[]" "$arg_s_d"
+  fi
+
   # Display available commands only if none is active
   if [ -z "${BASET_COMMANDS_CURRENT}" ]; then
     i=0
@@ -244,6 +255,8 @@ baset_help() {
       i=$(($i+1))
     done
   fi
+
+  printf "\n"
   exit 0
 }
 
@@ -346,7 +359,7 @@ baset_args() {
     if [ ${mergedOpts_t[$i]} == "no" ]; then
       is=$(eval "echo \${$var}")
       if [ "$is" != "yes"  ]; then
-        eval "$var='no'"
+        eval "${var}='no'"
       fi
     fi
     i=$(($i+1))
