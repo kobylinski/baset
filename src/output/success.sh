@@ -1,5 +1,3 @@
-#!/usr/bin/env bash
-
 success() {
   local len=$(strlen "SUCCESS: $1" "${@:2}") line
   len="$(($len + 4))"

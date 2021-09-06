@@ -1,5 +1,3 @@
-#!/usr/bin/env bash
-
 # Script option storage
 # Options storage
 BASET_OPTIONS=("--help" "-v")                            # option signature
@@ -246,17 +244,19 @@ baset_help() {
     i=$(($i+1))
   done
 
-  # Display available arguments
-  i=0
-  printf "\n\033[${FP}mArguments:\033[${FN}m\n"
-  for var in "${args[@]}"; do
-    if [ "$verbose" == "yes" ]; then
-      printf "  \033[${FA}m%-${vLen}s\033[${FN}m  \033[${FAF}m\$%-${variablesLen}s\033[${FN}m  %s\n" "$var" "$var" "${args_d[$i]}"
-    else
-      printf "  \033[${FA}m%-${vLen}s\033[${FN}m  %s\n" "$var" "${args_d[$i]}"
-    fi
-    i=$(($i+1))
-  done
+  if [ "${#args[@]}" -gt 0 ]; then
+    # Display available arguments
+    i=0
+    printf "\n\033[${FP}mArguments:\033[${FN}m\n"
+    for var in "${args[@]}"; do
+      if [ "$verbose" == "yes" ]; then
+        printf "  \033[${FA}m%-${vLen}s\033[${FN}m  \033[${FAF}m\$%-${variablesLen}s\033[${FN}m  %s\n" "$var" "$var" "${args_d[$i]}"
+      else
+        printf "  \033[${FA}m%-${vLen}s\033[${FN}m  %s\n" "$var" "${args_d[$i]}"
+      fi
+      i=$(($i+1))
+    done
+  fi
 
   # Add Spread argument
   if [ ! -z "${arg_s}" ]; then

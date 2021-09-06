@@ -1,5 +1,3 @@
-#!/usr/bin/env bash
-
 strlen(){
   local size=0 line realLine realLineSise
   for line in "$@"; do

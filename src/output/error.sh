@@ -1,5 +1,3 @@
-#!/usr/bin/env bash
-
 error() {
   local len=$(strlen "ERROR: $1" "${@:2}") line
   len="$(($len + 4))"

@@ -1,5 +1,3 @@
-#!/usr/bin/env bash
-
 BASET_APP_NAME=
 BASET_APP_V=
 

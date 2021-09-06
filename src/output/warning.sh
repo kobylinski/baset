@@ -1,5 +1,3 @@
-#!/usr/bin/env bash
-
 warning() {
   local len=$(strlen "WARNING: $1" "${@:2}") line
   len="$(($len + 4))"

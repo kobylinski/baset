@@ -1,5 +1,3 @@
-#!/usr/bin/env bash
-
 list#() {
   local count=$#
   local cc=${#count} line i=1

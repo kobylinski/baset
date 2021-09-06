@@ -1,0 +1,3 @@
+baset_bootstrap() {
+  $filename
+}
