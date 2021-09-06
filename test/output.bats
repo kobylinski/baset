@@ -11,21 +11,6 @@ function setup() {
   source "$DIR/../src/output/list.sh"
 }
 
-@test "Test strlen function" {
-  run strlen "line 1"
-  [ $output -eq 6 ]
-}
-
-@test "Test strlen function with fornatting" {
-  run strlen "line \033[38;5;250;48;5;215mwith formatting"
-  [ $output -eq 20 ]
-}
-
-@test "Test strlen longest string result" {
-  run strlen "short", "medium", "22 letters long string"
-  [ $output -eq 22 ]
-}
-
 @test "Test error: has error label" {
   run error "Title" 
   [[ "${lines[0]}" =~ "ERROR" ]]

@@ -1,4 +1,4 @@
-success() {
+output_success() {
   local len=$(strlen "SUCCESS: $1" "${@:2}") line
   len="$(($len + 4))"
   local titleLen="$(($len - 10))"
@@ -7,7 +7,7 @@ success() {
   if [ $# -gt 1 ]; then
     local pointLen=$(($len - 3))
     for line in "${@:2}"; do
-      printf -- "\033[${FI};${FSF}m%s\033[${FN}m" " * "
+      printf -- "\033[${FI};${FSF}m %s \033[${FN}m" $'\xE2\x80\xa2'
       printf -- "\033[${FSF}m%-${pointLen}s\033[${FN}m\n" "$line"
     done
   fi

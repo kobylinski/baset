@@ -1,75 +1,57 @@
 # Script option storage
 # Options storage
-BASET_OPTIONS=("--help" "-v")                            # option signature
-BASET_OPTIONS_V=("help" "verbose")                       # variable name represents option
-BASET_OPTIONS_T=("no" "no")                              # if option is a flag type or value type
-BASET_OPTIONS_D=("Display help" "Show debug comments")   # option help description
-BASET_OPTIONS_M=("no" "no")                              # if option can contains multiple values
+INPUT_OPTIONS=("--help" "-v")                            # option signature
+INPUT_OPTIONS_V=("help" "verbose")                       # variable name represents option
+INPUT_OPTIONS_T=("no" "no")                              # if option is a flag type or value type
+INPUT_OPTIONS_D=("Display help" "Show debug comments")   # option help description
+INPUT_OPTIONS_M=("no" "no")                              # if option can contains multiple values
 # In variable namespace will be also createding additional set
 # of variables with command prefix for command specific options
 
 # Arguments storage
-BASET_ARGS=()     # List of arguments
-BASET_ARGS_D=()   # List of descriptions of arguments for help view
+INPUT_ARGS=()     # List of arguments
+INPUT_ARGS_D=()   # List of descriptions of arguments for help view
 # Also available with command prefix
 
 # Spread argumets storage
 # Represents one argument containse all other undefined arguments appears in command line
-BASET_ARG_S=""    # Argument name
-BASET_ARG_S_D=""  # Argument help message
+INPUT_ARG_S=""    # Argument name
+INPUT_ARG_S_D=""  # Argument help message
 # Also available with command prefix
 
-# General information about tool
-# It can contains multiline string
-BASET_INFO=()
-# It has also command specific version as variable with prefix
-
 # Current script name
-BASET_SCRIPTNAME=$(basename $0)
+INPUT_SCRIPTNAME=$(basename $0)
 
 # List of available commands
-BASET_COMMANDS=()
-BASET_COMMANDS_D=()
-BASET_COMMANDS_CURRENT=""
+INPUT_COMMANDS=()
+INPUT_COMMANDS_D=()
+INPUT_COMMANDS_CURRENT=""
 #====================================================================================================
-
-# Add multiline information about tool or currently active command
-# - $... List of following lines of information
-+info() {
-  local var
-  for var in "$@"; do
-    if [ -z "$BASET_COMMANDS_CURRENT" ]; then
-      BASET_INFO+=( "$var" )
-    else
-      eval "${BASET_COMMANDS_CURRENT}_BASET_INFO+=( \"$var\" )"
-    fi
-  done
-}
 
 # Add tool/command named argument
 # Value of this argument will be pass into bash variable with the same name
 # - $1 argument name
 # - $2 argument help description
-+arg() {
-  if [ -z "$BASET_COMMANDS_CURRENT" ]; then
-    BASET_ARGS+=( "$1" )
-    BASET_ARGS_D+=( "$2" )
+input_arg() {
+  if [ -z "$INPUT_COMMANDS_CURRENT" ]; then
+    INPUT_ARGS+=( "$1" )
+    INPUT_ARGS_D+=( "$2" )
   else
-    eval "${BASET_COMMANDS_CURRENT}_BASET_ARGS+=( \"$1\" )"
-    eval "${BASET_COMMANDS_CURRENT}_BASET_ARGS_D+=( \"$2\" )"
+    eval "${INPUT_COMMANDS_CURRENT}_INPUT_ARGS+=( \"$1\" )"
+    eval "${INPUT_COMMANDS_CURRENT}_INPUT_ARGS_D+=( \"$2\" )"
   fi
 }
 
 # Add special spread argument at the end of arguments contains all unspecified arguments passed to tool/command
 # - $1 argument name
 # - $2 argument help description
-+args() {
-  if [ -z "$BASET_COMMANDS_CURRENT" ]; then
-    BASET_ARG_S="$1"
-    BASET_ARG_S_D="$2"
+input_args() {
+  if [ -z "$INPUT_COMMANDS_CURRENT" ]; then
+    INPUT_ARG_S="$1"
+    INPUT_ARG_S_D="$2"
   else
-    eval "${BASET_COMMANDS_CURRENT}_BASET_ARG_S=( \"$1\" )"
-    eval "${BASET_COMMANDS_CURRENT}_BASET_ARG_S_D=( \"$2\" )"
+    eval "${INPUT_COMMANDS_CURRENT}_INPUT_ARG_S=( \"$1\" )"
+    eval "${INPUT_COMMANDS_CURRENT}_INPUT_ARG_S_D=( \"$2\" )"
   fi
 }
 
@@ -80,7 +62,7 @@ BASET_COMMANDS_CURRENT=""
 #
 # - $1 option name
 # - $2 option description
-+opt() {
+input_opt() {
   local name hasValue isMulti lastChar
   if [ "${1:0:2}" == '--' ]; then
     lastChar=${1:${#1}-1}
@@ -108,70 +90,69 @@ BASET_COMMANDS_CURRENT=""
         "In case of flag option start name with -"
   fi
 
-  if [ -z "$BASET_COMMANDS_CURRENT" ]; then
-    BASET_OPTIONS+=( "$1" )
-    BASET_OPTIONS_V+=( "${name/-/_}" )
-    BASET_OPTIONS_T+=( "$hasValue" )
-    BASET_OPTIONS_D+=( "$2" )
-    BASET_OPTIONS_M+=( "$isMulti" )
+  if [ -z "$INPUT_COMMANDS_CURRENT" ]; then
+    INPUT_OPTIONS+=( "$1" )
+    INPUT_OPTIONS_V+=( "${name/-/_}" )
+    INPUT_OPTIONS_T+=( "$hasValue" )
+    INPUT_OPTIONS_D+=( "$2" )
+    INPUT_OPTIONS_M+=( "$isMulti" )
   else
-    eval "${BASET_COMMANDS_CURRENT}_BASET_OPTIONS+=( \"$1\" )"
-    eval "${BASET_COMMANDS_CURRENT}_BASET_OPTIONS_V+=( \"${name/-/_}\" )"
-    eval "${BASET_COMMANDS_CURRENT}_BASET_OPTIONS_T+=( \"$hasValue\" )"
-    eval "${BASET_COMMANDS_CURRENT}_BASET_OPTIONS_D+=( \"$2\" )"
-    eval "${BASET_COMMANDS_CURRENT}_BASET_OPTIONS_M+=( \"$isMulti\" )"
+    eval "${INPUT_COMMANDS_CURRENT}_INPUT_OPTIONS+=( \"$1\" )"
+    eval "${INPUT_COMMANDS_CURRENT}_INPUT_OPTIONS_V+=( \"${name/-/_}\" )"
+    eval "${INPUT_COMMANDS_CURRENT}_INPUT_OPTIONS_T+=( \"$hasValue\" )"
+    eval "${INPUT_COMMANDS_CURRENT}_INPUT_OPTIONS_D+=( \"$2\" )"
+    eval "${INPUT_COMMANDS_CURRENT}_INPUT_OPTIONS_M+=( \"$isMulti\" )"
   fi
 }
 
 # Add new command
 # - $1 Command name
 # - $2 Command description
-+cmd() {
-  BASET_COMMANDS+=( "$1" )
-  BASET_COMMANDS_D+=( "$2" )
-  BASET_COMMANDS_CURRENT="$1"
-  eval "${1}_BASET_OPTIONS=()"
-  eval "${1}_BASET_OPTIONS_V=()"
-  eval "${1}_BASET_OPTIONS_T=()"
-  eval "${1}_BASET_OPTIONS_D=()"
-  eval "${1}_BASET_OPTIONS_M=()"
-  eval "${1}_BASET_ARGS=()"
-  eval "${1}_BASET_ARGS_D=()"
-  eval "${1}_BASET_ARG_S=\"\""
-  eval "${1}_BASET_ARG_S_D=\"\""
-  eval "${1}_BASET_INFO=()"
+input_cmd() {
+  INPUT_COMMANDS+=( "$1" )
+  INPUT_COMMANDS_D+=( "$2" )
+  INPUT_COMMANDS_CURRENT="$1"
+  eval "${1}_INPUT_OPTIONS=()"
+  eval "${1}_INPUT_OPTIONS_V=()"
+  eval "${1}_INPUT_OPTIONS_T=()"
+  eval "${1}_INPUT_OPTIONS_D=()"
+  eval "${1}_INPUT_OPTIONS_M=()"
+  eval "${1}_INPUT_ARGS=()"
+  eval "${1}_INPUT_ARGS_D=()"
+  eval "${1}_INPUT_ARG_S=\"\""
+  eval "${1}_INPUT_ARG_S_D=\"\""
 }
 
 # Print args help
-baset_help() {
+input_print_help() {
   local var i=0 is
-  local options=("${BASET_OPTIONS[@]}")
-  local options_d=("${BASET_OPTIONS_D[@]}")
-  local options_v=("${BASET_OPTIONS_V[@]}")
-  local args=("${BASET_ARGS[@]}")
-  local args_d=("${BASET_ARGS_D[@]}")
-  local arg_s="$BASET_ARG_S"
-  local arg_s_d="$BASET_ARG_S_D"
+  local options=("${INPUT_OPTIONS[@]}")
+  local options_d=("${INPUT_OPTIONS_D[@]}")
+  local options_v=("${INPUT_OPTIONS_V[@]}")
+  local args=("${INPUT_ARGS[@]}")
+  local args_d=("${INPUT_ARGS_D[@]}")
+  local arg_s="$INPUT_ARG_S"
+  local arg_s_d="$INPUT_ARG_S_D"
   local vlen vlenOpts
-  local hLen=$(strlen "${BASET_INFO[@]}")
-  local variables=("${BASET_OPTIONS_V[@]}" "${BASET_ARG_S[@]}")
+  local hLen=$(strlen "${INPUT_INFO[@]}")
+  local variables=("${INPUT_OPTIONS_V[@]}" "${INPUT_ARG_S[@]}")
   local variablesLen
 
   # Print tool header
-  if [ ${#BASET_INFO[@]} -ne 0 ]; then
-    for var in "${BASET_INFO[@]}"; do
+  if [ ${#INPUT_INFO[@]} -ne 0 ]; then
+    for var in "${INPUT_INFO[@]}"; do
       printf "\n\033[${FAF}m %s\033[${FN}m" "$var"
     done
-    printf "\n \033[${FA}m%${hLen}s\033[${FN}m" "Version $BASET_APP_V"
+    printf "\n \033[${FA}m%${hLen}s\033[${FN}m" "Version $INPUT_APP_V"
   else
-    baset_head
+    app_head
   fi
 
-  if [ ! -z "${BASET_COMMANDS_CURRENT}" ]; then
+  if [ ! -z "${INPUT_COMMANDS_CURRENT}" ]; then
     i=0
-    for var in "${BASET_COMMANDS[@]}"; do
-      if [[ "$var" == "$BASET_COMMANDS_CURRENT" ]]; then
-        printf "\n\n\033[${FAF}m  %s\033[${FN}m" "${BASET_COMMANDS_D[$i]}"
+    for var in "${INPUT_COMMANDS[@]}"; do
+      if [[ "$var" == "$INPUT_COMMANDS_CURRENT" ]]; then
+        printf "\n\n\033[${FAF}m  %s\033[${FN}m" "${INPUT_COMMANDS_D[$i]}"
       fi
       i=$(($i+1))
     done
@@ -182,38 +163,38 @@ baset_help() {
   printf "  \033[${FAF}m$BASET_SCRIPTNAME\033[${FN}m [options]"
 
   # Merge options and arbuments command specific
-  if [ ! -z "${BASET_COMMANDS_CURRENT}" ]; then
-    eval "options=(\"\${options[@]}\" \"\${${BASET_COMMANDS_CURRENT}_BASET_OPTIONS[@]}\")"  
-    eval "options_d=(\"\${options_d[@]}\" \"\${${BASET_COMMANDS_CURRENT}_BASET_OPTIONS_D[@]}\")"  
-    eval "options_v=(\"\${options_v[@]}\" \"\${${BASET_COMMANDS_CURRENT}_BASET_OPTIONS_V[@]}\")"  
-    eval "args=(\"\${args[@]}\" \"\${${BASET_COMMANDS_CURRENT}_BASET_ARGS[@]}\")"
-    eval "args_d=(\"\${args_d[@]}\" \"\${${BASET_COMMANDS_CURRENT}_BASET_ARGS_D[@]}\")"
-    eval "variables+=(\"\${${BASET_COMMANDS_CURRENT}_BASET_OPTIONS_V[@]}\" \"\${args[@]}\")"
+  if [ ! -z "${INPUT_COMMANDS_CURRENT}" ]; then
+    eval "options=(\"\${options[@]}\" \"\${${INPUT_COMMANDS_CURRENT}_INPUT_OPTIONS[@]}\")"  
+    eval "options_d=(\"\${options_d[@]}\" \"\${${INPUT_COMMANDS_CURRENT}_INPUT_OPTIONS_D[@]}\")"  
+    eval "options_v=(\"\${options_v[@]}\" \"\${${INPUT_COMMANDS_CURRENT}_INPUT_OPTIONS_V[@]}\")"  
+    eval "args=(\"\${args[@]}\" \"\${${INPUT_COMMANDS_CURRENT}_INPUT_ARGS[@]}\")"
+    eval "args_d=(\"\${args_d[@]}\" \"\${${INPUT_COMMANDS_CURRENT}_INPUT_ARGS_D[@]}\")"
+    eval "variables+=(\"\${${INPUT_COMMANDS_CURRENT}_INPUT_OPTIONS_V[@]}\" \"\${args[@]}\")"
 
     # List of attributes and option names to setup optimal length of attrib. name column width
     vLenOpts=("${options[@]}" "${args[@]}")
 
     # Check if command specific spread attribute is defined
-    is=$(eval "echo \${${BASET_COMMANDS_CURRENT}_BASET_ARG_S}")
+    is=$(eval "echo \${${INPUT_COMMANDS_CURRENT}_INPUT_ARG_S}")
 
     # Override default spread attribute
     if [ ! -z "${is}" ]; then
       arg_s="$is"
-      eval "arg_s_d=\${${BASET_COMMANDS_CURRENT}_BASET_ARG_S_D}"
+      eval "arg_s_d=\${${INPUT_COMMANDS_CURRENT}_INPUT_ARG_S_D}"
       vLenOpts+=("$arg_s\[\]")
       variables+=("$arg_s")
     fi
 
     # Maximum lenght of attribute names to nice printing
     vLen=$(strlen "${vLenOpts[@]}")
-    printf " \033[${FAF}m%s\033[${FN}m" "$BASET_COMMANDS_CURRENT"
+    printf " \033[${FAF}m%s\033[${FN}m" "$INPUT_COMMANDS_CURRENT"
 
     # Display usage of command
   else
-    vLen=$(strlen "${options[@]} ${args[@]} ${BASET_COMMANDS[@]}")
+    vLen=$(strlen "${options[@]} ${args[@]} ${INPUT_COMMANDS[@]}")
 
     # Display global usage
-    if [ "${#BASET_COMMANDS[@]}" -ne 0 ]; then
+    if [ "${#INPUT_COMMANDS[@]}" -ne 0 ]; then
       # when commands are defined
       printf " {command}"
     fi
@@ -268,11 +249,11 @@ baset_help() {
   fi
 
   # Display available commands only if none is active
-  if [ -z "${BASET_COMMANDS_CURRENT}" ]; then
+  if [ -z "${INPUT_COMMANDS_CURRENT}" ]; then
     i=0
     printf "\n\033[${FP}mCommands:\033[${FN}m\n"
-    for var in "${BASET_COMMANDS[@]}"; do
-      printf "  \033[${FA}m%-${vLen}s\033[${FN}m  %s\n" "$var" "${BASET_COMMANDS_D[$i]}"
+    for var in "${INPUT_COMMANDS[@]}"; do
+      printf "  \033[${FA}m%-${vLen}s\033[${FN}m  %s\n" "$var" "${INPUT_COMMANDS_D[$i]}"
       i=$(($i+1))
     done
   fi
@@ -283,14 +264,14 @@ baset_help() {
 
 # Parse current args
 # - $... List of command line arguments to parse
-baset_args() {
-  BASET_COMMANDS_CURRENT=""
+input_parse() {
+  INPUT_COMMANDS_CURRENT=""
   local var i=0 j=0 opt is optV="" optM
-  local mergedOpts=("${BASET_OPTIONS[@]}") 
-  local mergedOpts_t=("${BASET_OPTIONS_T[@]}") 
-  local mergedOpts_v=("${BASET_OPTIONS_V[@]}")
-  local mergedOpts_m=("${BASET_OPTIONS_M[@]}")
-  local mergedArgs=("${BASET_ARGS[@]}")
+  local mergedOpts=("${INPUT_OPTIONS[@]}") 
+  local mergedOpts_t=("${INPUT_OPTIONS_T[@]}") 
+  local mergedOpts_v=("${INPUT_OPTIONS_V[@]}")
+  local mergedOpts_m=("${INPUT_OPTIONS_M[@]}")
+  local mergedArgs=("${INPUT_ARGS[@]}")
   local mergedArg_s=""
   local spread=()
   for var in "$@"; do
@@ -335,23 +316,23 @@ baset_args() {
     else
 
       # If there is no command set and its first argument detected
-      if [ -z "$BASET_COMMANDS_CURRENT" -a $i -eq 0 ]; then
+      if [ -z "$INPUT_COMMANDS_CURRENT" -a $i -eq 0 ]; then
 
         # Iterate through defined commands looking for match
-        for j in "${BASET_COMMANDS[@]}"; do
+        for j in "${INPUT_COMMANDS[@]}"; do
           if [ "$j" == "$var" ]; then
 
             # Set current active command
-            BASET_COMMANDS_CURRENT="$var"
+            INPUT_COMMANDS_CURRENT="$var"
 
             # Update list of available options with command specific 
-            eval "mergedOpts=(\"\${BASET_OPTIONS[@]}\" \"\${${BASET_COMMANDS_CURRENT}_BASET_OPTIONS[@]}\")"
-            eval "mergedOpts_t=(\"\${BASET_OPTIONS_T[@]}\" \"\${${BASET_COMMANDS_CURRENT}_BASET_OPTIONS_T[@]}\")"
-            eval "mergedOpts_v=(\"\${BASET_OPTIONS_V[@]}\" \"\${${BASET_COMMANDS_CURRENT}_BASET_OPTIONS_V[@]}\")"
-            eval "mergedOpts_m=(\"\${BASET_OPTIONS_M[@]}\" \"\${${BASET_COMMANDS_CURRENT}_BASET_OPTIONS_M[@]}\")"
+            eval "mergedOpts=(\"\${INPUT_OPTIONS[@]}\" \"\${${INPUT_COMMANDS_CURRENT}_INPUT_OPTIONS[@]}\")"
+            eval "mergedOpts_t=(\"\${INPUT_OPTIONS_T[@]}\" \"\${${INPUT_COMMANDS_CURRENT}_INPUT_OPTIONS_T[@]}\")"
+            eval "mergedOpts_v=(\"\${INPUT_OPTIONS_V[@]}\" \"\${${INPUT_COMMANDS_CURRENT}_INPUT_OPTIONS_V[@]}\")"
+            eval "mergedOpts_m=(\"\${INPUT_OPTIONS_M[@]}\" \"\${${INPUT_COMMANDS_CURRENT}_INPUT_OPTIONS_M[@]}\")"
 
             # Update args with command specific ones
-            eval "mergedArgs=(\"\${BASET_ARGS[@]}\" \"\${${BASET_COMMANDS_CURRENT}_BASET_ARGS[@]}\")"
+            eval "mergedArgs=(\"\${INPUT_ARGS[@]}\" \"\${${INPUT_COMMANDS_CURRENT}_INPUT_ARGS[@]}\")"
           fi
         done
       else
@@ -364,10 +345,10 @@ baset_args() {
       i=$(($i+1))
     fi
   done 
-  if [ -z "$BASET_COMMANDS_CURRENT" ]; then
-    mergedArg_s="$BASET_ARG_S" 
+  if [ -z "$INPUT_COMMANDS_CURRENT" ]; then
+    mergedArg_s="$INPUT_ARG_S" 
   else
-    eval "mergedArg_s=\${${BASET_COMMANDS_CURRENT}_BASET_ARG_S}"
+    eval "mergedArg_s=\${${INPUT_COMMANDS_CURRENT}_INPUT_ARG_S}"
   fi
   if [[ ! -z "$mergedArg_s" ]]; then
     eval "$mergedArg_s=()"

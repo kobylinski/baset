@@ -1,4 +1,4 @@
-list#() {
+list_n() {
   local count=$#
   local cc=${#count} line i=1
   for line in "$@"; do
@@ -7,7 +7,7 @@ list#() {
   done
 }
 
-list*() {
+list_p() {
   for line in "$@"; do
     printf -- "  \033[${FPF};${FI}m%s\033[${FN}m \033[${FP}m%s\033[${FN}m\n" $'\xE2\x80\xa2' "$line"
   done
