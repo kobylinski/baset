@@ -88,7 +88,7 @@ tool_string_format(){
           fi
         fi
       done <<< $ca
-      format="$format\033[${sa}"
+      format="${format}\033[${sa}"
     else
       format="$ca"
     fi

@@ -7,11 +7,12 @@
 source ./src/colors.sh
 source ./src/symbols.sh
 source ./src/lib/tool/string.sh
-source ./src/lib/output/list.sh
-# source ./src/output/warning.sh
+# source ./src/lib/output/list.sh
+source ./src/lib/output/message.sh
 
-output_ordered_list "test" "test" "test"
-output_bullet_list "test" "test" "test"
+output_error "Error message" "extra line 1 - - - - - - - -" "extra line 2"
+output_warning "Warning message" "extra line 1 - - - - - - - -" "extra line 2"
+output_success "Success message" "extra line 1 - - - - - - - -" "extra line 2"
 
 # app_name() {
 #   if [[ -z $APP_NAME ]] && [[ -z $APP_V ]]; then
