@@ -58,9 +58,9 @@ tool_string_value() {
 ###############################################################################
 tool_string_format(){
   [[ $# -eq 0 ]] && return 1
-  local ca cb cc format sa sb sc i=1 IFS=
+  local ca cb cc format sa sb sc i=0 IFS=
   while read -d '<' ca || [[ -n $ca ]]; do
-    if [[ ! -z $format ]]; then
+    if [[ $i -gt 0 ]]; then
       sa=""
       while read -d '>' cb || [[ -n $cb ]]; do
         cb=${cb%$'\n'*}
@@ -92,6 +92,7 @@ tool_string_format(){
     else
       format="$ca"
     fi
+    i=$(($i + 1))
   done <<< $1
   printf $format "${@:2}"
   return 0

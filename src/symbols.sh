@@ -1,0 +1,1 @@
+SYMBOL_BULLET=$'\xE2\x80\xa2'

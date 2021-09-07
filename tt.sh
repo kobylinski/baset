@@ -5,12 +5,13 @@
 
 
 source ./src/colors.sh
-source ./src/tool/string.sh
-# source ./src/output/error.sh
+source ./src/symbols.sh
+source ./src/lib/tool/string.sh
+source ./src/lib/output/list.sh
 # source ./src/output/warning.sh
 
-print_formats
-
+output_ordered_list "test" "test" "test"
+output_bullet_list "test" "test" "test"
 
 # app_name() {
 #   if [[ -z $APP_NAME ]] && [[ -z $APP_V ]]; then
