@@ -23,6 +23,29 @@ tool_string_len(){
 }
 
 ###############################################################################
+# Check if given variable is defined and its string
+# Arguments:
+#   Variable name
+# Returns:
+#   0 yes
+#   1 no
+###############################################################################
+tool_string_is() {
+  declare -p $1 2> /dev/null | grep -q "^declare -- $1=\""
+}
+
+###############################################################################
+# Prints value of variable based on its name
+# Arguments:
+#   Variable name
+# Outputs:
+#   Variable value
+###############################################################################
+tool_string_value() {
+  eval "printf \$$1"
+}
+
+###############################################################################
 # Output formated string based on pseudo html tags
 # Arguments:
 #   Format string
@@ -40,32 +63,21 @@ tool_string_format(){
     if [[ ! -z $format ]]; then
       sa=""
       while read -d '>' cb || [[ -n $cb ]]; do
-        cb=$(echo "$cb" | sed 's/ \n$//g')
+        cb=${cb%$'\n'*}
         if [[ ! -z $sa ]]; then
           sa="$sa$cb"
         else
           if [[  $cb == "/" ]]; then
-            sa="$sa${FN}m"
+            sa="$sa${FORMAT_RESET}m"
           else
             sb=""
             while read -d ';' cc || [[ -n $cc ]]; do
-              cc=$(echo "$cc" | sed 's/ \n$//g')
+              cc=${cc%$'\n'*}
               sc=""
               if [[ ! -z $cc ]]; then
-                case $cc in
-                  FI)   sc="$FI" ;;
-                  FE)   sc="$FE" ;;
-                  FEF)  sc="$FEF" ;;
-                  FW)   sc="$FW" ;;
-                  FWF)  sc="$FWF" ;;
-                  FS)   sc="$FS" ;;
-                  FSF)  sc="$FSF" ;;
-                  FP)   sc="$FP" ;;
-                  FPF)  sc="$FPF" ;;
-                  FA)   sc="$FA" ;;
-                  FAF)  sc="$FAF" ;;
-                  *)    sc="$cc" ;;
-                esac
+                if tool_string_is "FORMAT_$cc"; then
+                  sc="$sc$(tool_string_value "FORMAT_$cc")"
+                fi
                 if [[ ! -z $sb ]]; then
                   sc=";$sc"
                 fi

@@ -9,7 +9,7 @@ source ./src/tool/string.sh
 # source ./src/output/error.sh
 # source ./src/output/warning.sh
 
-tool_string_format "before content <FS> %s <FSF> %s2 </> " "qpa1" "qpa2"
+print_formats
 
 
 # app_name() {
