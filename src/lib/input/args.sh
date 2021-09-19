@@ -192,6 +192,10 @@ input_args() {
 # Arguments:
 #   Option name
 #   Option description
+# Returns:
+#   0 on success
+#   1 if missing arguments
+#   2 if signature has invalid format
 ###############################################################################
 input_opt() {
   [[ $# -eq 2 ]] || return 1
@@ -235,9 +239,28 @@ input_opt() {
   fi
 }
 
+###############################################################################
 # Add new command
-# - $1 Command name
-# - $2 Command description
+# Globals:
+#   INPUT_COMMANDS
+#   INPUT_COMMANDS_D
+#   INPUT_COMMANDS_CURRENT
+#   cmd_prefix_INPUT_OPTIONS
+#   cmd_prefix_INPUT_OPTIONS_V
+#   cmd_prefix_INPUT_OPTIONS_T
+#   cmd_prefix_INPUT_OPTIONS_D
+#   cmd_prefix_INPUT_OPTIONS_M
+#   cmd_prefix_INPUT_ARGS
+#   cmd_prefix_INPUT_ARGS_D
+#   cmd_prefix_INPUT_ARG_S
+#   cmd_prefix_INPUT_ARG_S_D
+# Arguments:
+#   Command name
+#   Command description
+# Returns:
+#   0 on success
+#   1 if missing arguments
+###############################################################################
 input_cmd() {
   [[ $# -eq 2 ]] || return 1
   INPUT_COMMANDS+=( "$1" )
@@ -254,7 +277,11 @@ input_cmd() {
   eval "${1}_INPUT_ARG_S_D=\"\""
 }
 
+###############################################################################
 # Print args help
+# Output:
+#   Formated help 
+###############################################################################
 input_print_help() {
   local var i=0 is
   local options=("${INPUT_OPTIONS[@]}")

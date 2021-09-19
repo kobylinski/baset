@@ -2,9 +2,9 @@
 
 function setup() {
   DIR="$( cd "$( dirname "$BATS_TEST_FILENAME" )" >/dev/null 2>&1 && pwd )"
-  source "$DIR/../../../src/lib/colors.sh"
-  source "$DIR/../../../src/output/strings.sh"
-  source "$DIR/../../../src/output/error.sh"
+  source "$DIR/../../../src/colors.sh"
+  source "$DIR/../../../src/lib/tool/string.sh"
+  source "$DIR/../../../src/lib/output/message.sh"
 }
 
 @test "Test error: has error label" {

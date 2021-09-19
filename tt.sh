@@ -4,12 +4,18 @@ no_color="yes"
 source ./src/colors.sh
 source ./src/symbols.sh
 source ./src/lib/tool/string.sh
-# source ./src/lib/output/list.sh
-# source ./src/lib/output/message.sh
-
-tool_string_format "<ERROR>bazinga!</> aaa"
+source ./src/lib/app/name.sh
+source ./src/lib/input/args.sh
 
 
+app_info  "  _____  _____  _____  _____  _____  " \
+          " | __  ||  _  ||   __||   __||_   _| " \
+          " | __ -||     ||__   ||   __|  | |   " \
+          " |_____||__|__||_____||_____|  |_|   "
+
+app_name "Baset"           "0.0.1"
+
+input_print_help
 
 # app_name() {
 

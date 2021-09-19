@@ -2,7 +2,7 @@
 
 setup() {
   DIR="$( cd "$( dirname "$BATS_TEST_FILENAME" )" >/dev/null 2>&1 && pwd )"
-  source $DIR/../../src/tool/array.sh
+  source $DIR/../../../src/lib/tool/array.sh
 }
 
 @test "Test tool_array_last function" {

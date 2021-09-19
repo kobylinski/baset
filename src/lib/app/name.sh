@@ -1,44 +1,35 @@
+
+###############################################################################
 # Add Application name and version
-# 
 # Globals:
 #   APP_NAME
 #   APP_V
 # Arguments:
 #   Name of application
 #   Version of application
-# Outputs:
-#   App name with version on
+# Returns:
+#   0 on success
+#   1 if missing arguments
+#   2 if name and version already defined
+###############################################################################
 app_name() {
-  if [[ -z $APP_NAME ]] && [[ -z $APP_V ]]; then
-    readonly APP_NAME=$1
-    readonly APP_V=$2
-    return 0
+  [[ $# -eq 2 ]] || return 1
+  if [[ ! -z $APP_NAME ]] || [[ ! -z $APP_V ]]; then 
+    return 2
   fi
-
-  if [[ $# -eq 0 ]]; then
-    printf "\033[${FA}m%s\033[${FN}m" "$APP_NAME"
-    if [ "${APP_V+x}" ]; then 
-      printf " version \033[${FP}m%s\33[${FN}m" "$APP_V"
-    fi
-    printf "\n"
-  fi
+  readonly APP_NAME=$1
+  readonly APP_V=$2
 }
 
+###############################################################################
 # Add multiline banner
-# 
-# $@ list of lines of banner
-app_banner() {
-  if [[ -z $APP_INFO ]]; then
-    readonly APP_INFO=$@
-  else
-    if [[  ]]
-  fi
-
-
-  local var
-  declare -a APP_INFO
-  for var in "$@"; do
-    APP_INFO+=( $var )
-  done
-  declare -r APP_INFO
+# Globals:
+#   APP_INFO
+# Arguments:
+#   List of lines of app info
+###############################################################################
+app_info() {
+  [[ $# -eq 0 ]] && return 1
+  [[ ! -z $APP_INFO ]] && return 2
+  readonly APP_INFO=( "$@" )
 }
