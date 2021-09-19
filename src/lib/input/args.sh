@@ -132,7 +132,7 @@ INPUT_COMMANDS_CURRENT=""
 #   1 missing required arguments
 ###############################################################################
 input_arg() {
-  [[ $# -lt 2 ]] || return 1
+  [[ $# -eq 2 ]] || return 1
   if [ -z "$INPUT_COMMANDS_CURRENT" ]; then
     INPUT_ARGS+=( "$1" )
     INPUT_ARGS_D+=( "$2" )
@@ -159,7 +159,7 @@ input_arg() {
 #   1 missing required arguments
 ###############################################################################
 input_args() {
-  [[ $# -lt 2 ]] || return 1
+  [[ $# -eq 2 ]] || return 1
   if [ -z "$INPUT_COMMANDS_CURRENT" ]; then
     INPUT_ARG_S="$1"
     INPUT_ARG_S_D="$2"
@@ -239,6 +239,7 @@ input_opt() {
 # - $1 Command name
 # - $2 Command description
 input_cmd() {
+  [[ $# -eq 2 ]] || return 1
   INPUT_COMMANDS+=( "$1" )
   INPUT_COMMANDS_D+=( "$2" )
   INPUT_COMMANDS_CURRENT="$1"
