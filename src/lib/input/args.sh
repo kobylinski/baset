@@ -1,38 +1,138 @@
-# Script option storage
-# Options storage
-INPUT_OPTIONS=("--help" "-v")                            # option signature
-INPUT_OPTIONS_V=("help" "verbose")                       # variable name represents option
-INPUT_OPTIONS_T=("no" "no")                              # if option is a flag type or value type
-INPUT_OPTIONS_D=("Display help" "Show debug comments")   # option help description
-INPUT_OPTIONS_M=("no" "no")                              # if option can contains multiple values
-# In variable namespace will be also createding additional set
-# of variables with command prefix for command specific options
+# Parse too arguments
+###############################################################################
+# Script option storage - datastructure describes options
+# 
+# Structure:
+# (
+#   INPUT_OPTIONS: signature
+#   INPUT_OPTIONS_V: variable name represents option
+#   INPUT_OPTIONS_T: if option is a flag type or value type
+#   INPUT_OPTIONS_D: option help description
+#   INPUT_OPTIONS_M: if option can contains multiple values
+# )
+# In variable namespace will be also createding additional set of variables 
+# with command prefix for command specific options
+# ( 
+#   cmd_prefix_INPUT_OPTIONS 
+#   cmd_prefix_INPUT_OPTIONS_V  
+#   cmd_prefix_INPUT_OPTIONS_T
+#   cmd_prefix_INPUT_OPTIONS_D
+#   cmd_prefix_INPUT_OPTIONS_M
+# )
+# 
+# Used by:
+#   input_opt
+#   input_parse
+#   input_cmd
+#   input_print_help
+###############################################################################
+INPUT_OPTIONS=("--help" "-v" "--no-color")                      
+INPUT_OPTIONS_V=("help" "verbose" "no_color")                
+INPUT_OPTIONS_T=("no" "no" "no")                      
+INPUT_OPTIONS_D=("Display help" "Show debug comments" "Disable color output") 
+INPUT_OPTIONS_M=("no" "no" "no")
 
+###############################################################################
 # Arguments storage
-INPUT_ARGS=()     # List of arguments
-INPUT_ARGS_D=()   # List of descriptions of arguments for help view
+#
+# Structure:
+# (
+#   INPUT_ARGS: List of arguments
+#   INPUT_ARGS_D: List of descriptions of arguments for help view
+# )
 # Also available with command prefix
+# (
+#   cmd_prefix_INPUT_ARGS
+#   cmd_prefix_INPUT_ARGS_D
+# )
+#
+# Used by:
+#   input_arg
+#   input_cmd
+#   input_print_help
+#   input_parse
+###############################################################################
+INPUT_ARGS=()   
+INPUT_ARGS_D=()
 
+###############################################################################
 # Spread argumets storage
-# Represents one argument containse all other undefined arguments appears in command line
-INPUT_ARG_S=""    # Argument name
-INPUT_ARG_S_D=""  # Argument help message
+#
+# Represents one argument containse all other undefined arguments appears in 
+# command line
+# ( 
+#   INPUT_ARG_S: Argument name
+#   INPUT_ARG_S_D: Argument help message
+# )
 # Also available with command prefix
+# (
+#   cmd_prefix_INPUT_ARG_S
+#   cmd_prefix_INPUT_ARGS_D
+# )
+#
+# Used by:
+#   input_args
+#   input_cmd
+#   input_print_help
+#   input_parse
+###############################################################################
+INPUT_ARG_S=""   
+INPUT_ARG_S_D="" 
 
+###############################################################################
 # Current script name
+#
+# Used by:
+#   input_print_help
+###############################################################################
 INPUT_SCRIPTNAME=$(basename $0)
 
+###############################################################################
 # List of available commands
+#
+# Structure:
+# (
+#   INPUT_COMMANDS: List of commands signature
+#   INPUT_COMMANDS_D: List of commands descriptions
+# )
+#
+# Used by:
+#   input_cmd
+#   input_print_help
+###############################################################################
 INPUT_COMMANDS=()
 INPUT_COMMANDS_D=()
-INPUT_COMMANDS_CURRENT=""
-#====================================================================================================
 
+###############################################################################
+# Currently selected command
+#
+# Used by:
+#   input_arg
+#   input_args
+#   input_opt
+#   input_cmd
+#   input_print_help
+#   input_parse
+###############################################################################
+INPUT_COMMANDS_CURRENT=""
+
+###############################################################################
 # Add tool/command named argument
-# Value of this argument will be pass into bash variable with the same name
-# - $1 argument name
-# - $2 argument help description
+# Globals:
+#   INPUT_COMMANDS_CURRENT
+#   INPUT_ARGS
+#   INPUT_ARGS_D
+#   cmd_prefix_INPUT_ARGS
+#   cmd_prefix_INPUT_ARGS_D
+# Arguments:
+#   Tool/command argument name
+#   Tool/command argument description
+# Returns:
+#   0 on success
+#   1 missing required arguments
+###############################################################################
 input_arg() {
+  [[ $# -lt 2 ]] || return 1
   if [ -z "$INPUT_COMMANDS_CURRENT" ]; then
     INPUT_ARGS+=( "$1" )
     INPUT_ARGS_D+=( "$2" )
@@ -42,10 +142,24 @@ input_arg() {
   fi
 }
 
-# Add special spread argument at the end of arguments contains all unspecified arguments passed to tool/command
-# - $1 argument name
-# - $2 argument help description
+###############################################################################
+# Add special spread argument at the end of arguments contains all 
+# unspecified arguments passed to tool/command
+# Globals:
+#   INPUT_COMMANDS_CURRENT
+#   INPUT_ARG_S
+#   INPUT_ARG_S_D
+#   cmd_prefix_INPUT_ARG_S
+#   cmd_prefix_INPUT_ARG_S_D
+# Arguments:
+#   Tool/command spread argument name
+#   Tool/command spread argument description
+# Returns:
+#   0 on success
+#   1 missing required arguments
+###############################################################################
 input_args() {
+  [[ $# -lt 2 ]] || return 1
   if [ -z "$INPUT_COMMANDS_CURRENT" ]; then
     INPUT_ARG_S="$1"
     INPUT_ARG_S_D="$2"
@@ -55,14 +169,32 @@ input_args() {
   fi
 }
 
-# Add option with format: 
+###############################################################################
+# Add option
+#
+# Available signature formats:
 # --option-name or -name for flag option with value yes or no
 # --option-name= for value option
 # --option-name* form multi-value option
 #
-# - $1 option name
-# - $2 option description
+# Globals:
+#   INPUT_COMMANDS_CURRENT
+#   INPUT_OPTIONS
+#   INPUT_OPTIONS_V
+#   INPUT_OPTIONS_T
+#   INPUT_OPTIONS_D
+#   INPUT_OPTIONS_M
+#   cmd_prefix_INPUT_OPTIONS
+#   cmd_prefix_INPUT_OPTIONS_V
+#   cmd_prefix_INPUT_OPTIONS_T
+#   cmd_prefix_INPUT_OPTIONS_D
+#   cmd_prefix_INPUT_OPTIONS_M
+# Arguments:
+#   Option name
+#   Option description
+###############################################################################
 input_opt() {
+  [[ $# -eq 2 ]] || return 1
   local name hasValue isMulti lastChar
   if [ "${1:0:2}" == '--' ]; then
     lastChar=${1:${#1}-1}
@@ -85,9 +217,7 @@ input_opt() {
     hasValue="no"
     isMulti="no"
   else
-    die "Invalid option declatration." \
-        "In case of value option start name with --" \
-        "In case of flag option start name with -"
+    return 2
   fi
 
   if [ -z "$INPUT_COMMANDS_CURRENT" ]; then
@@ -160,7 +290,7 @@ input_print_help() {
 
   # Usage header
   printf "\n\n\033[${FP}mUsage:\033[${FN}m\n\n"
-  printf "  \033[${FAF}m$BASET_SCRIPTNAME\033[${FN}m [options]"
+  printf "  \033[${FAF}m$INPUT_SCRIPTNAME\033[${FN}m [options]"
 
   # Merge options and arbuments command specific
   if [ ! -z "${INPUT_COMMANDS_CURRENT}" ]; then

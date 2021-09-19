@@ -1,20 +1,18 @@
 #!/bin/sh
 
-
-
-
-
+no_color="yes"
 source ./src/colors.sh
 source ./src/symbols.sh
 source ./src/lib/tool/string.sh
 # source ./src/lib/output/list.sh
-source ./src/lib/output/message.sh
+# source ./src/lib/output/message.sh
 
-output_error "Error message" "extra line 1 - - - - - - - -" "extra line 2"
-output_warning "Warning message" "extra line 1 - - - - - - - -" "extra line 2"
-output_success "Success message" "extra line 1 - - - - - - - -" "extra line 2"
+tool_string_format "<ERROR>bazinga!</> aaa"
+
+
 
 # app_name() {
+
 #   if [[ -z $APP_NAME ]] && [[ -z $APP_V ]]; then
 #     if [[ -z $1 ]]; then
 #       output_error "Missing application name"
@@ -36,6 +34,7 @@ output_success "Success message" "extra line 1 - - - - - - - -" "extra line 2"
 
 #   output_warning "Application name already defined"
 #   return 2
+
 # }
 
 # app_name "Baset" "v1.3.3"

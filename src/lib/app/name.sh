@@ -22,7 +22,6 @@ app_name() {
     fi
     printf "\n"
   fi
-  
 }
 
 # Add multiline banner

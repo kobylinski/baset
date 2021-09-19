@@ -7,10 +7,6 @@ function setup() {
   source "$DIR/../../../src/output/error.sh"
 }
 
-  # source "$DIR/../../../src/output/warning.sh"
-  # source "$DIR/../../../src/output/success.sh"
-  # source "$DIR/../../../src/output/list.sh"
-
 @test "Test error: has error label" {
   run output_error "Title" 
   [[ "${lines[0]}" =~ "ERROR" ]]

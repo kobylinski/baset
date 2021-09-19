@@ -47,6 +47,10 @@ tool_string_value() {
 
 ###############################################################################
 # Output formated string based on pseudo html tags
+# Globals:
+#   no_color
+#   FORMAT_RESET
+#   FORMAT_*
 # Arguments:
 #   Format string
 #   List of extra arguments
@@ -58,42 +62,106 @@ tool_string_value() {
 ###############################################################################
 tool_string_format(){
   [[ $# -eq 0 ]] && return 1
-  local ca cb cc format sa sb sc i=0 IFS=
+
+  # value of format string
+  local format
+
+  # helper variables
+  local ca cb cc sa sb sc IFS=
+
+  # chunks iterators
+  local i=0 j=0
+
+  # switch off
+  if [ -z ${no_color+x} ]; then
+    local no_color="no"
+  fi
+
+  # cut string using start of tags
+  # unformatted text < [format definition & formatted text or reset tag]
   while read -d '<' ca || [[ -n $ca ]]; do
+
+    # next chunks
+    # (<) formatted definition & formatted text or reset tag
     if [[ $i -gt 0 ]]; then
       sa=""
+      j=0
+
+      # cuts chunk using closing tag format definition '>'
+      # (<) format definition > formatted text or (<) /
       while read -d '>' cb || [[ -n $cb ]]; do
+
+        # drops end of line from subchunk
         cb=${cb%$'\n'*}
-        if [[ ! -z $sa ]]; then
+
+        # is its a string after tag
+        if [[ $j -gt 0 ]]; then
           sa="$sa$cb"
         else
+
+          # if its reset tag </>
           if [[  $cb == "/" ]]; then
-            sa="$sa${FORMAT_RESET}m"
+            if [[ $no_color == "no" ]]; then
+              sa="$sa${FORMAT_RESET}m"
+            fi
+
+          # if its format
           else
             sb=""
+
+            # cuts format string constants with ; as separator
+            # ( < ) FORMAT1 ';' FORMAT2 ';' ... '>' 
             while read -d ';' cc || [[ -n $cc ]]; do
+              
+              # drops end of line from subchunk
               cc=${cc%$'\n'*}
               sc=""
               if [[ ! -z $cc ]]; then
+
+                # checks if format constant exists
                 if tool_string_is "FORMAT_$cc"; then
+
+                  # read format string from predefined constant
                   sc="$sc$(tool_string_value "FORMAT_$cc")"
                 fi
+
+                # once one style is defined next style is glued with ;
                 if [[ ! -z $sb ]]; then
                   sc=";$sc"
                 fi
               fi
+
+              # glue style with one prevously defined
               sb="$sb$sc"
             done <<< $cb
-            sa="$sa${sb}m"
+
+            # finish style string with 
+            if [[ $no_color == "no" ]]; then
+              sa="$sa${sb}m"
+            fi
           fi
         fi
+
+        j=$(($j + 1))
       done <<< $ca
-      format="${format}\033[${sa}"
+
+      # glue formatted string with previously defined
+      if [[ $no_color == "yes" ]]; then
+        format="$format$sa"
+      else
+        format="${format}\033[${sa}"
+      fi
+    
+    # first chunk (unformatted string)
     else
       format="$ca"
     fi
+
+    # iterate number of chunks
     i=$(($i + 1))
   done <<< $1
-  printf $format "${@:2}"
-  return 0
+  shift
+
+  # outputs formatted string
+  printf $format $@
 }
