@@ -1,4 +1,6 @@
-
+APP_NAME=""
+APP_V=""
+APP_INFO=()
 ###############################################################################
 # Add Application name and version
 # Globals:
@@ -17,8 +19,8 @@ app_name() {
   if [[ ! -z $APP_NAME ]] || [[ ! -z $APP_V ]]; then 
     return 2
   fi
-  readonly APP_NAME=$1
-  readonly APP_V=$2
+  APP_NAME=$1
+  APP_V=$2
 }
 
 ###############################################################################
@@ -31,5 +33,5 @@ app_name() {
 app_info() {
   [[ $# -eq 0 ]] && return 1
   [[ ! -z $APP_INFO ]] && return 2
-  readonly APP_INFO=( "$@" )
+  APP_INFO=( "$@" )
 }

@@ -12,7 +12,7 @@ tool_string_len(){
   [[ $# -eq 0 ]] && return 1 
   local size=0 line realLine realLineSise
   for line in "$@"; do
-    realLine=$(echo $line | sed 's/\\033\[[0-9;]*m//g')
+    realLine=$(echo "$line" | sed 's/\\033\[[0-9;]*m//g')
     realLineSise=${#realLine}
     if [ $size -lt $realLineSise ]; then
       size=$realLineSise
@@ -67,7 +67,7 @@ tool_string_format(){
   local format
 
   # helper variables
-  local ca cb cc sa sb sc IFS=
+  local ca cb cc sa sb sc IFS=""
 
   # chunks iterators
   local i=0 j=0
@@ -79,7 +79,7 @@ tool_string_format(){
 
   # cut string using start of tags
   # unformatted text < [format definition & formatted text or reset tag]
-  while read -d '<' ca || [[ -n $ca ]]; do
+  while read -r -d '<' ca || [[ -n $ca ]]; do
 
     # next chunks
     # (<) formatted definition & formatted text or reset tag
@@ -89,10 +89,10 @@ tool_string_format(){
 
       # cuts chunk using closing tag format definition '>'
       # (<) format definition > formatted text or (<) /
-      while read -d '>' cb || [[ -n $cb ]]; do
+      while read -r -d '>' cb || [[ -n $cb ]]; do
 
         # drops end of line from subchunk
-        cb=${cb%$'\n'*}
+        # cb=${cb%$'\n'*}
 
         # is its a string after tag
         if [[ $j -gt 0 ]]; then
@@ -111,10 +111,10 @@ tool_string_format(){
 
             # cuts format string constants with ; as separator
             # ( < ) FORMAT1 ';' FORMAT2 ';' ... '>' 
-            while read -d ';' cc || [[ -n $cc ]]; do
+            while read -r -d ';' cc || [[ -n $cc ]]; do
               
               # drops end of line from subchunk
-              cc=${cc%$'\n'*}
+              # cc=${cc%$'\n'*}
               sc=""
               if [[ ! -z $cc ]]; then
 
@@ -133,7 +133,7 @@ tool_string_format(){
 
               # glue style with one prevously defined
               sb="$sb$sc"
-            done <<< $cb
+            done < <(cb)
 
             # finish style string with 
             if [[ $no_color == "no" ]]; then
@@ -143,7 +143,7 @@ tool_string_format(){
         fi
 
         j=$(($j + 1))
-      done <<< $ca
+      done < <(ca)
 
       # glue formatted string with previously defined
       if [[ $no_color == "yes" ]]; then

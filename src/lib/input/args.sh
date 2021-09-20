@@ -277,8 +277,16 @@ input_cmd() {
   eval "${1}_INPUT_ARG_S_D=\"\""
 }
 
+INPUT_HELP_INFO_FORMAT=" <ACCENT_FADE>%s</>"
+INPUT_HELP_APP_FORMAT="<ACCENT>%s <ACCENT_FADE>Version<ACCENT> %s</>"
+INPUT_HELP_COMMAND_INFO=" <ACCENT_FADE>%s</>"
+INPUT_HELP_USAGE_HEADER="<PRIMARY>Usage:</>"
+INPUT_HELP_USAGE=" <ACCENT_FADE>%s</> [options]"
+
 ###############################################################################
 # Print args help
+# Globals:
+#   APP_INFO
 # Output:
 #   Formated help 
 ###############################################################################
@@ -292,33 +300,39 @@ input_print_help() {
   local arg_s="$INPUT_ARG_S"
   local arg_s_d="$INPUT_ARG_S_D"
   local vlen vlenOpts
-  local hLen=$(strlen "${INPUT_INFO[@]}")
+  local hLen=$(tool_string_len "${APP_INFO[@]}")
   local variables=("${INPUT_OPTIONS_V[@]}" "${INPUT_ARG_S[@]}")
   local variablesLen
+  local format
 
   # Print tool header
-  if [ ${#INPUT_INFO[@]} -ne 0 ]; then
-    for var in "${INPUT_INFO[@]}"; do
-      printf "\n\033[${FAF}m %s\033[${FN}m" "$var"
+  if [ "${#APP_INFO[@]}" -gt 0 ]; then
+    for var in "${APP_INFO[@]}"; do
+      tool_string_format "$INPUT_HELP_INFO_FORMAT" "$var"
     done
-    printf "\n \033[${FA}m%${hLen}s\033[${FN}m" "Version $INPUT_APP_V"
-  else
-    app_head
+  fi
+
+  if [[ ! -z "$APP_NAME" ]] && [[ ! -z "$APP_V" ]]; then
+    i=$(( $hLen - $(tool_string_len "$APP_V")))
+    i=$(( $i - 10))
+    format=$(printf "$INPUT_HELP_APP_FORMAT" "%${i}s" "%s")
+    tool_string_format "$format" "$APP_NAME" "$APP_V"
   fi
 
   if [ ! -z "${INPUT_COMMANDS_CURRENT}" ]; then
     i=0
     for var in "${INPUT_COMMANDS[@]}"; do
       if [[ "$var" == "$INPUT_COMMANDS_CURRENT" ]]; then
-        printf "\n\n\033[${FAF}m  %s\033[${FN}m" "${INPUT_COMMANDS_D[$i]}"
+        tool_string_format "$INPUT_HELP_COMMAND_INFO" "${INPUT_COMMANDS_D[$i]}"
       fi
       i=$(($i+1))
     done
   fi
 
   # Usage header
-  printf "\n\n\033[${FP}mUsage:\033[${FN}m\n\n"
-  printf "  \033[${FAF}m$INPUT_SCRIPTNAME\033[${FN}m [options]"
+  printf "\n\n"
+  tool_string_format "$INPUT_HELP_USAGE_HEADER"
+  tool_string_format "$INPUT_HELP_USAGE" "$INPUT_SCRIPTNAME"
 
   # Merge options and arbuments command specific
   if [ ! -z "${INPUT_COMMANDS_CURRENT}" ]; then
@@ -344,12 +358,12 @@ input_print_help() {
     fi
 
     # Maximum lenght of attribute names to nice printing
-    vLen=$(strlen "${vLenOpts[@]}")
+    vLen=$(tool_string_len "${vLenOpts[@]}")
     printf " \033[${FAF}m%s\033[${FN}m" "$INPUT_COMMANDS_CURRENT"
 
     # Display usage of command
   else
-    vLen=$(strlen "${options[@]} ${args[@]} ${INPUT_COMMANDS[@]}")
+    vLen=$(tool_string_len "${options[@]} ${args[@]} ${INPUT_COMMANDS[@]}")
 
     # Display global usage
     if [ "${#INPUT_COMMANDS[@]}" -ne 0 ]; then
@@ -358,66 +372,66 @@ input_print_help() {
     fi
   fi
 
-  # Calculate variables column width
-  variablesLen=$(strlen "${variables[@]}");
+  # # Calculate variables column width
+  # variablesLen=$(strlen "${variables[@]}");
 
-  # Display rest of args
-  for var in "${args[@]}"; do
-    printf " {%s}" "$var"
-  done
+  # # Display rest of args
+  # for var in "${args[@]}"; do
+  #   printf " {%s}" "$var"
+  # done
 
-  # Display last spread argument
-  if [ ! -z "${arg_s}" ]; then
-    printf " {%s[]}" "$arg_s"
-  fi
+  # # Display last spread argument
+  # if [ ! -z "${arg_s}" ]; then
+  #   printf " {%s[]}" "$arg_s"
+  # fi
 
-  # Display available optioms
-  i=0
-  printf "\n\n\n\033[${FP}mOptions:\033[${FN}m\n"
-  for var in "${options[@]}"; do
-    if [ "$verbose" == "yes" ]; then
-      printf "  \033[${FA}m%-${vLen}s\033[${FN}m  \033[${FAF}m\$%-${variablesLen}s\033[${FN}m %s\n" "$var" "${options_v[$i]}" "${options_d[$i]}"
-    else
-      printf "  \033[${FA}m%-${vLen}s\033[${FN}m  %s\n" "$var" "${options_d[$i]}"
-    fi
-    i=$(($i+1))
-  done
+  # # Display available optioms
+  # i=0
+  # printf "\n\n\n\033[${FP}mOptions:\033[${FN}m\n"
+  # for var in "${options[@]}"; do
+  #   if [ "$verbose" == "yes" ]; then
+  #     printf "  \033[${FA}m%-${vLen}s\033[${FN}m  \033[${FAF}m\$%-${variablesLen}s\033[${FN}m %s\n" "$var" "${options_v[$i]}" "${options_d[$i]}"
+  #   else
+  #     printf "  \033[${FA}m%-${vLen}s\033[${FN}m  %s\n" "$var" "${options_d[$i]}"
+  #   fi
+  #   i=$(($i+1))
+  # done
 
-  if [ "${#args[@]}" -gt 0 ]; then
-    # Display available arguments
-    i=0
-    printf "\n\033[${FP}mArguments:\033[${FN}m\n"
-    for var in "${args[@]}"; do
-      if [ "$verbose" == "yes" ]; then
-        printf "  \033[${FA}m%-${vLen}s\033[${FN}m  \033[${FAF}m\$%-${variablesLen}s\033[${FN}m  %s\n" "$var" "$var" "${args_d[$i]}"
-      else
-        printf "  \033[${FA}m%-${vLen}s\033[${FN}m  %s\n" "$var" "${args_d[$i]}"
-      fi
-      i=$(($i+1))
-    done
-  fi
+  # if [ "${#args[@]}" -gt 0 ]; then
+  #   # Display available arguments
+  #   i=0
+  #   printf "\n\033[${FP}mArguments:\033[${FN}m\n"
+  #   for var in "${args[@]}"; do
+  #     if [ "$verbose" == "yes" ]; then
+  #       printf "  \033[${FA}m%-${vLen}s\033[${FN}m  \033[${FAF}m\$%-${variablesLen}s\033[${FN}m  %s\n" "$var" "$var" "${args_d[$i]}"
+  #     else
+  #       printf "  \033[${FA}m%-${vLen}s\033[${FN}m  %s\n" "$var" "${args_d[$i]}"
+  #     fi
+  #     i=$(($i+1))
+  #   done
+  # fi
 
-  # Add Spread argument
-  if [ ! -z "${arg_s}" ]; then
-    if [ "$verbose" == "yes" ]; then
-      printf "  \033[${FA}m%-${vLen}s\033[${FN}m  \033[${FAF}m\$%-${variablesLen}s\033[${FN}m  %s\n" "$arg_s[]" "$arg_s" "$arg_s_d"
-    else
-      printf "  \033[${FA}m%-${vLen}s\033[${FN}m  %s\n" "$arg_s[]" "$arg_s_d"
-    fi
-  fi
+  # # Add Spread argument
+  # if [ ! -z "${arg_s}" ]; then
+  #   if [ "$verbose" == "yes" ]; then
+  #     printf "  \033[${FA}m%-${vLen}s\033[${FN}m  \033[${FAF}m\$%-${variablesLen}s\033[${FN}m  %s\n" "$arg_s[]" "$arg_s" "$arg_s_d"
+  #   else
+  #     printf "  \033[${FA}m%-${vLen}s\033[${FN}m  %s\n" "$arg_s[]" "$arg_s_d"
+  #   fi
+  # fi
 
-  # Display available commands only if none is active
-  if [ -z "${INPUT_COMMANDS_CURRENT}" ]; then
-    i=0
-    printf "\n\033[${FP}mCommands:\033[${FN}m\n"
-    for var in "${INPUT_COMMANDS[@]}"; do
-      printf "  \033[${FA}m%-${vLen}s\033[${FN}m  %s\n" "$var" "${INPUT_COMMANDS_D[$i]}"
-      i=$(($i+1))
-    done
-  fi
+  # # Display available commands only if none is active
+  # if [ -z "${INPUT_COMMANDS_CURRENT}" ]; then
+  #   i=0
+  #   printf "\n\033[${FP}mCommands:\033[${FN}m\n"
+  #   for var in "${INPUT_COMMANDS[@]}"; do
+  #     printf "  \033[${FA}m%-${vLen}s\033[${FN}m  %s\n" "$var" "${INPUT_COMMANDS_D[$i]}"
+  #     i=$(($i+1))
+  #   done
+  # fi
 
-  printf "\n"
-  exit 0
+  # printf "\n"
+  # exit 0
 }
 
 # Parse current args

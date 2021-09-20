@@ -1,21 +1,35 @@
 #!/bin/sh
+IFS=""
 
-no_color="yes"
-source ./src/colors.sh
-source ./src/symbols.sh
-source ./src/lib/tool/string.sh
-source ./src/lib/app/name.sh
-source ./src/lib/input/args.sh
+while read -r -d '<' ca || [[ -n $ca ]]; do
+  printf "$ca" | hexdump -C
+  while IFS="" read -r -d '>' cb || [[ -n $cb ]]; do
+    printf $cb
+  done <<< $ca
+done <<< "\n\nq>pa<aaa>aa<ppp>pp\n\n"
 
 
-app_info  "  _____  _____  _____  _____  _____  " \
-          " | __  ||  _  ||   __||   __||_   _| " \
-          " | __ -||     ||__   ||   __|  | |   " \
-          " |_____||__|__||_____||_____|  |_|   "
 
-app_name "Baset"           "0.0.1"
+# source ./src/colors.sh
+# source ./src/symbols.sh
+# source ./src/lib/tool/string.sh
+# source ./src/lib/app/name.sh
+# source ./src/lib/input/args.sh
 
-input_print_help
+# app_info  "  _____  _____  _____  _____  _____  " \
+#           " | __  ||  _  ||   __||   __||_   _| " \
+#           " | __ -||     ||__   ||   __|  | |   " \
+#           " |_____||__|__||_____||_____|  |_|   "
+
+# app_name "Baset" "0.0.1"
+
+# input_cmd "command1" "Command info"
+# input_cmd "command2" "Command info"
+
+
+# # INPUT_COMMANDS_CURRENT=""
+
+# input_print_help
 
 # app_name() {
 
